@@ -8,15 +8,17 @@ class W2Vmodel():
         self.datadir = datadir
         self.modelfname = modelfname
         self.model = models.Word2Vec()
-        self.dictionary = models.Word2Vec()
 
 
     def construct_model(min_count=5, size=200, workers=1):
         sentences = load_data_sentences(self.datadir)
         self.model = models.Word2Vec(sentences, min_count=min_count, size=size, workers=workers)
+
+    def save_model():
         self.model.save(self.modelfname)
 
-
+    def update_model(sentences):
+        self.model.train(sentences)
 
     def find_similar(target_tags, avoid_tags=[], topn=10):
         """
@@ -39,5 +41,9 @@ class W2Vmodel():
         
         return top_products
 
+    def construct_text8(self):
+        self.model = models.word2vec.Text8Corpus(self.modelfname)
+
+    def get_product_list(self):
 
 
