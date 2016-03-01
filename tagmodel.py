@@ -8,19 +8,24 @@ class W2Vmodel():
         self.datadir = datadir
         self.modelfname = modelfname
         self.model = models.Word2Vec()
+        return
 
+    def construct_model(self, min_count=5, size=200, workers=1):
+        sentence_list = load_data_sentences(self.datadir)
+        self.model = models.Word2Vec(sentence_list[0], min_count=min_count, size=size, workers=workers)
+        for sentencefile in sentence_list[1:]:
+            self.model.train(sentencefile)
+        return
 
-    def construct_model(min_count=5, size=200, workers=1):
-        sentences = load_data_sentences(self.datadir)
-        self.model = models.Word2Vec(sentences, min_count=min_count, size=size, workers=workers)
-
-    def save_model():
+    def save_model(self):
         self.model.save(self.modelfname)
+        return
 
-    def update_model(sentences):
+    def update_model(self, sentences):
         self.model.train(sentences)
+        return
 
-    def find_similar(target_tags, avoid_tags=[], topn=10):
+    def find_similar(self, target_tags, avoid_tags=[], topn=10):
         """
         Find the most similar n words in the vocabulary
         """
@@ -43,7 +48,7 @@ class W2Vmodel():
 
     def construct_text8(self):
         self.model = models.word2vec.Text8Corpus(self.modelfname)
+        return
 
     def get_product_list(self):
-
-
+        return
