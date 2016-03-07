@@ -13,15 +13,6 @@ class W2Vmodel():
         self.product_database = product_database
         self.product_collection = product_collection
         self.recom_collection = recom_collection
-        # save empty model
-        self.save_model(self.modelfname)
-        return
-
-    def construct_word_model(self, min_count=5, size=200, workers=1):
-        sentence_list = load_data_sentences(self.datadir)
-        self.model = models.Word2Vec(sentence_list[0], min_count=min_count, size=size, workers=workers)
-        for sentencefile in sentence_list[1:]:
-            self.model.train(sentencefile)
         return
 
     def save_model(self):
@@ -56,6 +47,13 @@ class W2Vmodel():
         
         return top_products
 
+    def construct_word_model(self, min_count=5, size=200, workers=1):
+        sentence_list = load_data_sentences(self.datadir)
+        self.model = models.Word2Vec(sentence_list[0], min_count=min_count, size=size, workers=workers)
+        for sentencefile in sentence_list[1:]:
+            self.model.train(sentencefile)
+        return
+
     def load_data_sentences(self):
         """
         Load all sentences in files under dirname
@@ -71,6 +69,9 @@ class W2Vmodel():
         Extract webpage information from each page,
         add as a batch of training data
         """
+        self.construct_word_model()
+        self.save_model()
+
         return
 
     def fetch_product_list(self):
@@ -119,7 +120,6 @@ class W2Vmodel():
         """
         Fetch data from all recommendations, store in data directory
         """
-
         review_list = self.fetch_review_list()
         with open(self.datadir + 'recommendation_data.txt', 'w') as file:
             for review in review_list:

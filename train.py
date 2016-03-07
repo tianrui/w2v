@@ -24,7 +24,6 @@ def arg_parse():
     recom_collection_string = 'Recommendation'
     datadir = './data/'
     modelfname = './model'
-    id = '0'
 
     parser = argparse.ArgumentParser(description='Training word2vec model with Amazon database')
     parser.add_argument('-host', default=host_string, type=String,
@@ -39,9 +38,6 @@ def arg_parse():
                         help='Directory for storing training data')
     parser.add_argument('-modelfname', default=modelfname, type=String,
                         help='Store model as this name')
-    parser.add_argument('-recom_id', default=id, type=String,
-                        help='ID of recommendation')
-
     args = parser.parse_args()
 
     return args
@@ -54,30 +50,19 @@ def main():
         'product_collection': args.product_collection_string,
         'datadir': args.datadir,
         'modelfname': args.modelfname,
-        'recom_collection': args.recom_collection_string,
-        'recom_id': args.recom_id
+        'recom_collection': args.recom_collection_string
         }
+    # download punkt tokenizer if necessary
+    nltk.download('punkt')
     
-    recommendation = Recommendation(opt.datadir,
+    model = W2Vmodel(opt.datadir,
                      opt.modelfname,
                      opt.host_string,
                      opt.product_database,
                      opt.recom_collection)
-
-    target_tags = recommendation.get_target_tags(opts.recom_id)
-    print "User {0} has target tags: ".format(self.opts.recom_id) + target_tags
-
-    recommendation_list = recommendation.inference(target_tags)
-    ID_list = []
-# list containing products and similarity matching scores
-    print "Recommended the following gift IDs from database: \n"
-    for product in recommendation_list:
-        print "ID: {0}, score: {0}".format(product[0]['prodID'], product[1])
-        ID_list.append(product[0]['prodID'])
-
-    recommendation.send_recommendation(ID_list, self.opt.recom_id)
-    print "Updated recommendation in database"
-
+    model.load_model()
+    model.construct_word_model()
+    model.save_model()
 
 if __name__ == '__main__':
     main()
