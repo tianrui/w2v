@@ -13,6 +13,8 @@ class W2Vmodel():
         self.product_database = product_database
         self.product_collection = product_collection
         self.recom_collection = recom_collection
+        # save empty model
+        self.save_model(self.modelfname)
         return
 
     def construct_word_model(self, min_count=5, size=200, workers=1):
@@ -24,6 +26,10 @@ class W2Vmodel():
 
     def save_model(self):
         self.model.save(self.modelfname)
+        return
+
+    def load_model(self):
+        self.model = models.Word2Vec.load(self.modelfname)
         return
 
     def update_model(self, sentences):
@@ -57,7 +63,7 @@ class W2Vmodel():
         sentence_list = []
         for fname in os.listdir(datadir):
             with open(os.path.join(datadir, fname)) as file:
-                sentence_list.append(gensim.models.LineSentence(file)
+                sentence_list.append(gensim.models.LineSentence(file))
         return sentence_list
 
     def train_dynamic(self):

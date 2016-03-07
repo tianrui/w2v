@@ -1,6 +1,7 @@
 from bson.objectid import ObjectId
 import pymongo
 import argparse
+import nltk
 
 from tagmodel import *
 from data_utils import *
@@ -35,12 +36,20 @@ class Recommendation():
         return tags
 
     def inference(self, target_tags):
+        """
+        Inference from the model based on target tags
+        target_tags: list of strings
+        """
         testmodel = W2Vmodel(self.datadir, self.modelfname)
         top_products = testmodel.find_similar(target_tags)
 
         return top_products
 
     def send_recommendation(self, recom, id):
+        """
+        recom: list of productIDs of top 10 recommended gifts
+        id: ObjectId of the recommendation to be updated, in string representation
+        """
         client = pymongo.MongoClient(self.host_string)
         db = client[self.database]
         recom_posts = db[self.recom_collection]
@@ -94,6 +103,7 @@ def main():
         'recom_collection': args.recom_collection_string,
         'recom_id': args.recom_id
         }
+    nltk.download('punkt')
 
     model = W2Vmodel(opt.datadir,
                      opt.modelfname,
