@@ -2,7 +2,9 @@ import logging, gensim, nltk.data
 import gensim.models as models
 from data_utils import *
 import os
+import io
 import pdb
+
 class Sentences():
     def __init__(self, datadir):
         self.datadir = datadir
@@ -53,8 +55,18 @@ class W2Vmodel():
         product_list = self.fetch_product_list()
         top_products = []
         kk = 0
+        similarity = -1
         for product in product_list:
-            similarity = self.model.n_similarity(target_tags, product.tags)
+            for tag in target_tags:
+                if tag not in self.model.vocab:
+                    #print "Remove %s from target tags, not in model" % tag
+                    target_tags.remove(tag)
+            for tag in product.tags:
+                if tag not in self.model.vocab:
+                    #print "Remove %s from product tags, not in model" % tag
+                    product['tags'].remove(tag)
+            if len(target_tags) > 0 and len(product.tags) > 0:
+                similarity = self.model.n_similarity(target_tags, product['tags'])
             if (len(top_products) < topn):
                 top_products.append((product, similarity))
             else:
@@ -63,20 +75,28 @@ class W2Vmodel():
                     top_products.append((product, similarity))
                     top_products.sort(key=lambda item: item[1])
                     top_products.reverse()
+                    top_products = top_products[:topn]
         
-        return top_products
+        return top_products[:topn]
 
     def construct_word_model(self, min_count=1, size=500, workers=1):
         sentence_list = self.load_data_sentences()
-        sentence_list = sentence_tokenize(sentence_list[0][0])
-        
-        transformer = gensim.models.Phrases(sentence_list)
+        #sentence_list = sentence_tokenize(sentence_list)
+        sentence_stream = []
+        for sentence in sentence_list:
+            sentence_stream.append(word_tokenize(sentence))
+        print sentence_stream[-1], len(sentence_stream)
+        transformer = gensim.models.Phrases(sentence_stream)
+        #print sentence_list[0], len(transformer[sentence_list]), len(sentence_list)
+        print transformer[sentence_stream][-1]
+        raw_input('stop')
         self.model = models.Word2Vec(sorted_vocab=1, min_count=min_count, size=size, workers=workers, iter=10, window=10)
-        self.model.scan_vocab(transformer[sentence_list])
-        self.model.build_vocab(transformer[sentence_list])
-        self.model.train(transformer[sentence_list])
+        self.model.scan_vocab(transformer[sentence_stream])
+        self.model.build_vocab(transformer[sentence_stream])
+        self.model.train(transformer[sentence_stream])
 
         print('Finished training')
+        print('Vocab size: %d\n' % len(self.model.vocab))
         #for fname in os.listdir(self.datadir):
         #    with open(os.path.join(datadir, fname)) as file:
         #        for line in file:
@@ -91,7 +111,7 @@ class W2Vmodel():
         for fname in os.listdir(self.datadir):
             with open(os.path.join(self.datadir, fname)) as file:
                 for line in file:
-                    sentence_list.append([line])
+                    sentence_list.append(line)
         return sentence_list
 
     def train_dynamic(self):
@@ -116,6 +136,7 @@ class W2Vmodel():
             if 'ID' in product_post:
                 tag_list = []
                 for tag in product_post['tag']:
+                    print word_tokenize(tag)
                     split_tag = tag.split('&')
                     if len(split_tag) > 1:
                         for split in split_tag:
@@ -123,9 +144,9 @@ class W2Vmodel():
                     else:
                         tag_list.append(tag.replace(' ', '_').lower())
                 product = AttrDict({'prodID': product_post['ID'],
-                                     'tags': tag_list})
+                                     'tags': list(tag_list)})
                 product_list.append(product)
-                #print product_post, product
+                #print product.tags
                 #raw_input('stop')
         return product_list
 
@@ -161,17 +182,15 @@ class W2Vmodel():
         Fetch data from all recommendations, store in data directory
         """
         review_list = self.fetch_review_list()
-        with open(self.datadir + 'recommendation_data.txt', 'w') as file:
+        with io.open(self.datadir + 'recommendation_data.txt', 'w', encoding='utf8') as file:
             for review in review_list:
                 review_lines = sentence_tokenize(review)
                 #pdb.set_trace()
-                line_sentence = []
-                for line in review_lines:
-                    line_sentence.extend(line.encode('ascii', 'ignore').split('\n'))
-                #print review
                 #print review_lines
-                print line_sentence
-                file.writelines(line_sentence)
+                for line in review_lines:
+                #print review
+                    file.write(line.decode('utf8', 'ignore'))
+
         file.close()
 
         raw_input('stop')

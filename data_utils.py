@@ -29,4 +29,8 @@ def train_dynamic(batch_size=10):
 
 def sentence_tokenize(text, language='english'):
     tokenizer = nltk.data.load('tokenizers/punkt/{0}.pickle'.format(language))
+
     return tokenizer.tokenize(text)
+
+def word_tokenize(text, language='english'):
+    return nltk.tokenize.word_tokenize(text)

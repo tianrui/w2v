@@ -20,12 +20,12 @@ from data_utils import *
 
 def arg_parse():
     """Parse input args"""
-    host_string = 'mongodb://localhost/'
+    host_string = 'mongodb://localhost:27017/'
     database_string = 'test'
     product_collection_string = 'Product'
     recom_collection_string = 'Recommendation'
     datadir = './data/'
-    modelfname = './model'
+    modelfname = './t8model'
     id = '0'
 
     parser = argparse.ArgumentParser(description='Training word2vec model with Amazon database')

@@ -18,7 +18,7 @@ from data_utils import *
 
 def arg_parse():
     """Parse input args"""
-    host_string = 'mongodb://localhost/'
+    host_string = 'mongodb://localhost:27017/'
     database_string = 'test'
     product_collection_string = 'Product'
     recom_collection_string = 'Recommendation'
@@ -62,7 +62,7 @@ def main():
                      opt.product_database,
                      opt.product_collection,
                      opt.recom_collection)
-    model.fetch_data_list()
+    #model.fetch_data_list()
     model.load_model()
     model.construct_word_model()
     model.save_model()
