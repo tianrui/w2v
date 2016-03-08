@@ -21,7 +21,7 @@ class Recommendation():
         self.datadir = datadir
         self.modelfname = modelfname
         self.model = models.Word2Vec()
-        self.host_string = host_string
+        self.host_string = host
         self.database = database
         self.recom_collection = recom_collection
         return

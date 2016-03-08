@@ -15,7 +15,8 @@ def load_data_sentences(dirname):
     sentence_list = []
     for fname in os.listdir(dirname):
         with open(os.path.join(dirname, fname)) as file:
-            sentence_list.append(gensim.models.LineSentence(file))
+            #sentence_list.append(gensim.models.word2vec.LineSentence(file))
+            sentence_list.append(file)
     return sentence_list
 
 def train_dynamic(batch_size=10):

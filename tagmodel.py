@@ -1,6 +1,8 @@
 import logging, gensim, nltk.data
 import gensim.models as models
 from data_utils import *
+import os
+import pdb
 
 class W2Vmodel():
 
@@ -20,7 +22,8 @@ class W2Vmodel():
         return
 
     def load_model(self):
-        self.model = models.Word2Vec.load(self.modelfname)
+        if os.path.isfile(self.modelfname):
+            self.model = models.Word2Vec.load(self.modelfname)
         return
 
     def update_model(self, sentences):
@@ -48,10 +51,13 @@ class W2Vmodel():
         return top_products
 
     def construct_word_model(self, min_count=5, size=200, workers=1):
-        sentence_list = load_data_sentences(self.datadir)
-        self.model = models.Word2Vec(sentence_list[0], min_count=min_count, size=size, workers=workers)
-        for sentencefile in sentence_list[1:]:
-            self.model.train(sentencefile)
+        sentence_list = self.load_data_sentences()
+        sentence_list = sentence_tokenize(sentence_list[0][0])
+        self.model = models.Word2Vec(sentence_list, min_count=min_count, size=size, workers=workers)
+        #for fname in os.listdir(self.datadir):
+        #    with open(os.path.join(datadir, fname)) as file:
+        #        for line in file:
+        #            self.model.train(line)
         return
 
     def load_data_sentences(self):
@@ -59,9 +65,10 @@ class W2Vmodel():
         Load all sentences in files under dirname
         """
         sentence_list = []
-        for fname in os.listdir(datadir):
-            with open(os.path.join(datadir, fname)) as file:
-                sentence_list.append(gensim.models.LineSentence(file))
+        for fname in os.listdir(self.datadir):
+            with open(os.path.join(self.datadir, fname)) as file:
+                for line in file:
+                    sentence_list.append([line])
         return sentence_list
 
     def train_dynamic(self):
@@ -69,7 +76,6 @@ class W2Vmodel():
         Extract webpage information from each page,
         add as a batch of training data
         """
-        self.construct_word_model()
         self.save_model()
 
         return
@@ -124,7 +130,15 @@ class W2Vmodel():
         with open(self.datadir + 'recommendation_data.txt', 'w') as file:
             for review in review_list:
                 review_lines = sentence_tokenize(review)
-                file.writelines(review_lines)
+                #pdb.set_trace()
+                line_sentence = []
+                for line in review_lines:
+                    line_sentence.extend(line.encode('ascii', 'ignore').split('\n'))
+                print review
+                print review_lines
+                print line_sentence
+                file.writelines(line_sentence)
         file.close()
 
+        raw_input('stop')
         return
