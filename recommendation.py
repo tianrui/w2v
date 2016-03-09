@@ -30,7 +30,7 @@ class Recommendation():
         client = pymongo.MongoClient(self.host_string)
         db = client[self.database]
         recom_posts = db[self.recom_collection]
-        post = recom_posts.find_one({'_id': ObjectId(id)})
+        post = recom_posts.find_one({'_id': id})
 
         tags = post['receiverTags']
         return tags
@@ -54,10 +54,10 @@ class Recommendation():
         client = pymongo.MongoClient(self.host_string)
         db = client[self.database]
         recom_posts = db[self.recom_collection]
-        post = recom_posts.find_one({'_id': ObjectId(id)})
+        post = recom_posts.find_one({'_id': id})
 
         post['product'] = recom
-        recom_posts.replace_one({'_id': ObjectId(id)}, post)
+        recom_posts.replace_one({'_id': id}, post)
 
         return
 
