@@ -18,10 +18,12 @@ from data_utils import *
 
 def arg_parse():
     """Parse input args"""
-    host_string = 'mongodb://localhost:27017/'
-    database_string = 'test'
-    product_collection_string = 'Product'
-    recom_collection_string = 'Recommendation'
+    #host_string = 'mongodb://localhost:27017'
+    host_string = 'mongodb://011399.mlab.com:11399'
+    #database_string = 'test'
+    database_string = 'heroku_73s67dx7'
+    product_collection_string = 'products'
+    recom_collection_string = 'recommendations'
     datadir = './data/'
     modelfname = './model'
 

@@ -17,21 +17,21 @@ from data_utils import *
 #                        date: String
 
 class Recommendation():
-    def __init__(self, datadir, modelfname, host, database, recom_collection):
+    def __init__(self, datadir, modelfname, host, database, recom_collection, product_collection):
         self.datadir = datadir
         self.modelfname = modelfname
         self.model = models.Word2Vec()
         self.host_string = host
         self.database = database
         self.recom_collection = recom_collection
+        self.product_collection = product_collection
         return
  
     def get_target_tags(self, id):
         client = pymongo.MongoClient(self.host_string)
         db = client[self.database]
         recom_posts = db[self.recom_collection]
-        post = recom_posts.find_one({'_id': id})
-
+        post = recom_posts.find_one({"_id": id})
         tags = post['receiverTags']
         return tags
 
@@ -40,7 +40,11 @@ class Recommendation():
         Inference from the model based on target tags
         target_tags: list of strings
         """
-        testmodel = W2Vmodel(self.datadir, self.modelfname)
+        testmodel = W2Vmodel(self.datadir, self.modelfname,
+        self.host_string,
+        self.database,
+        self.product_collection,
+        self.recom_collection)
         top_products = testmodel.find_similar(target_tags)
 
         return top_products
