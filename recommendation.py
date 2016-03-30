@@ -19,7 +19,7 @@ class Recommendation():
     def __init__(self, datadir, modelfname, host, database, recom_collection, product_collection):
         self.datadir = datadir
         self.modelfname = modelfname
-        self.model = models.Word2Vec()#.load(self.modelfname)
+        self.model = W2Vmodel(datadir, modelfname, host, database, product_collection, recom_collection)
         self.host_string = host
         self.database = database
         self.recom_collection = recom_collection
@@ -39,18 +39,19 @@ class Recommendation():
         Inference from the model based on target tags
         target_tags: list of strings
         """
-        testmodel = W2Vmodel(self.datadir, self.modelfname,
-        self.host_string,
-        self.database,
-        self.product_collection,
-        self.recom_collection)
-        testmodel.load_model()
-        top_products = testmodel.find_similar(target_tags)
-        #top_products = self.model.find_similar(target_tags)
+        #testmodel = W2Vmodel(self.datadir, self.modelfname,
+        #self.host_string,
+        #self.database,
+        #self.product_collection,
+        #self.recom_collection)
+        #testmodel.load_model()
+        #top_products = testmodel.find_similar(target_tags)
+        self.model.load_model()
+        top_products = self.model.find_similar(target_tags)
 
         return top_products
 
-    def send_recommendation(self, recom, id):
+    def send_recommendation(self, recom, rid):
         """
         recom: list of productIDs of top 10 recommended gifts
 
@@ -59,10 +60,12 @@ class Recommendation():
         client = pymongo.MongoClient(self.host_string)
         db = client[self.database]
         recom_posts = db[self.recom_collection]
-        post = recom_posts.find_one({'_id': id})
+        #post = recom_posts.find_one({'_id': rid})
+        #print rid, recom
+        #post['productID'] = recom
+        result = recom_posts.update_one({'_id': rid}, {'$set': {'productID': recom}})
 
-        post['product'] = recom
-        recom_posts.replace_one({'_id': id}, post)
+        #recom_posts.replace_one({'_id': rid}, post)
 
         return
 

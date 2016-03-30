@@ -56,7 +56,7 @@ class W2Vmodel():
                     self.model.train(sentences)
         return
 
-    def find_similar(self, raw_target_tags, avoid_tags=[], topn=10):
+    def find_similar(self, raw_target_tags, avoid_tags=[], topn=10, score_threshold=0.7):
         """
         Find the most similar n words in the vocabulary
         """
@@ -77,19 +77,22 @@ class W2Vmodel():
             #print pruned_product_tags
             #raw_input('Press enter')
 
-            if len(pruned_target_tags) > 0 and len(product.tags) > 0:
+            if len(pruned_target_tags) > 0 and len(pruned_product_tags) > 0:
                 similarity = self.model.n_similarity(pruned_target_tags, pruned_product_tags)
-            if (len(top_products) < topn):
-                top_products.append((product, similarity))
-            else:
-                # Insert if similarity is higher than the top products
-                if (similarity > top_products[-1][1]):
+            if (similarity > score_threshold):
+                if (len(top_products) < topn):
                     top_products.append((product, similarity))
                     top_products.sort(key=lambda item: item[1])
                     top_products.reverse()
-                    top_products = top_products[:topn]
+                else:
+                    # Insert if similarity is higher than the top products
+                    if (similarity > top_products[-1][1]):
+                        top_products.append((product, similarity))
+                        top_products.sort(key=lambda item: item[1])
+                        top_products.reverse()
+                        top_products = top_products[:topn]
         
-        return top_products[:topn]
+        return top_products
 
     def construct_word_model(self, min_count=1, size=500, workers=1):
         sentence_list = self.load_data_sentences()

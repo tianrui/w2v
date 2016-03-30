@@ -28,8 +28,8 @@ def arg_parse():
     database_string = 'heroku_73s67dx7'
     product_collection_string = 'products'
     recom_collection_string = 'recommendations'
-    datadir = './data/'
-    modelfname = './model'
+    datadir = '../../w2v/data/'
+    modelfname = '../../w2v/model'
     rid = '22'
 
     parser = argparse.ArgumentParser(description='Training word2vec model with Amazon database')
@@ -85,6 +85,7 @@ def main():
 #        })
     # hack for local call from node JS
     #opt.recom_id = sys.argv[2]
+    #print opt
 
     recommendation = Recommendation(opt.datadir,
                      opt.modelfname,
@@ -93,25 +94,30 @@ def main():
                      opt.recom_collection,
                      opt.product_collection)
     target_tags = recommendation.get_target_tags(opt.recom_id)
-    #print "User {0} has target tags: ".format(opt.recom_id) + "\n".join(target_tags)
+    datastr = "User {0} has target tags: ".format(opt.recom_id) + "\n".join(target_tags)
+    #print target_tags
     recommendation_list = recommendation.inference(target_tags)
     ID_list = []
     # list containing products and similarity matching scores
-    print "Recommended the following gift IDs from database: \n"
+    #print "Recommended the following gift IDs from database: \n"
     for product in recommendation_list:
         #pdb.set_trace()
         #print product, len(product), product[1]
-        #print "ID: {0}, score: {1}".format(product[0]['prodID'], product[1])
+        datastr += "\nID: {0}, score: {1}".format(product[0]['prodID'], product[1])
         #print "Product tags: ", product[0]['tags']
         ID_list.append(product[0]['prodID'])
 
+    print(target_tags, recommendation_list)
+    #print ID_list
+    sys.stdout.flush()
     recommendation.send_recommendation(ID_list, opt.recom_id)
-    print("Updated recommendation in database")
+    #print("Updated recommendation in database")
     #sys.stdout.flush()
-    return
+    return datastr
 
 
 if __name__ == '__main__':
-    print("Starting script")
-    #sys.stdout.flush()
-    main()
+    #print("Starting script")
+    datastr = main()
+    #print datastr
+    sys.stdout.flush()
