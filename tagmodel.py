@@ -3,6 +3,7 @@ import gensim.models as models
 from data_utils import *
 import os
 import io
+import scipy
 #import pdb
 
 class Sentences():
@@ -14,7 +15,7 @@ class Sentences():
         for fname in os.listdir(dirname):
             with open(os.path.join(dirname, fname)) as file:
                 for line in open(os.path.join(self.dirname, fname)):
-                    print line.split()
+                    #print line.split()
                     yield line.split()
 
 
@@ -44,29 +45,40 @@ class W2Vmodel():
             print "Model not found, could not be loaded."
         return
 
-    def update_model(self, sentences):
-        self.model.train(sentences)
+    def update_model(self, fname):
+        #pdb.set_trace()
+        if os.path.isfile(os.path.join(self.datadir, fname)):
+            with open(os.path.join(self.datadir, fname)) as file:
+                for line in open(os.path.join(self.datadir, fname)):
+                    sentences = sentence_tokenize(line)
+                    #print sentences
+                    #raw_input()
+                    self.model.train(sentences)
         return
 
-    def find_similar(self, target_tags, avoid_tags=[], topn=10):
+    def find_similar(self, raw_target_tags, avoid_tags=[], topn=10):
         """
         Find the most similar n words in the vocabulary
         """
         product_list = self.fetch_product_list()
         top_products = []
+        pruned_target_tags = []
+        pruned_product_tags = []
         kk = 0
         similarity = -1
+        
+        for tag in raw_target_tags:
+            pruned_target_tags.extend(tag.lower().split(' '))
+        pruned_target_tags[:] = list(set([tag for tag in pruned_target_tags if self.model.vocab.has_key(tag)]))
+
         for product in product_list:
-            for tag in target_tags:
-                if tag not in self.model.vocab:
-                    #print "Remove %s from target tags, not in model" % tag
-                    target_tags.remove(tag)
-            for tag in product.tags:
-                if tag not in self.model.vocab:
-                    #print "Remove %s from product tags, not in model" % tag
-                    product['tags'].remove(tag)
-            if len(target_tags) > 0 and len(product.tags) > 0:
-                similarity = self.model.n_similarity(target_tags, product['tags'])
+            pruned_product_tags[:] = list(set([tag for tag in product.tags if self.model.vocab.has_key(tag)]))
+            #print pruned_target_tags
+            #print pruned_product_tags
+            #raw_input('Press enter')
+
+            if len(pruned_target_tags) > 0 and len(product.tags) > 0:
+                similarity = self.model.n_similarity(pruned_target_tags, pruned_product_tags)
             if (len(top_products) < topn):
                 top_products.append((product, similarity))
             else:
@@ -85,11 +97,11 @@ class W2Vmodel():
         sentence_stream = []
         for sentence in sentence_list:
             sentence_stream.append(word_tokenize(sentence))
-        print sentence_stream[-1], len(sentence_stream)
+        #print sentence_stream[-1], len(sentence_stream)
         transformer = gensim.models.Phrases(sentence_stream)
         #print sentence_list[0], len(transformer[sentence_list]), len(sentence_list)
-        print transformer[sentence_stream][-1]
-        raw_input('stop')
+        #print transformer[sentence_stream][-1]
+        #raw_input('stop')
         self.model = models.Word2Vec(sorted_vocab=1, min_count=min_count, size=size, workers=workers, iter=10, window=10)
         self.model.scan_vocab(transformer[sentence_stream])
         self.model.build_vocab(transformer[sentence_stream])
@@ -136,7 +148,7 @@ class W2Vmodel():
             if 'ID' in product_post:
                 tag_list = []
                 for tag in product_post['tag']:
-                    print word_tokenize(tag)
+                    #print word_tokenize(tag)
                     split_tag = tag.split('&')
                     if len(split_tag) > 1:
                         for split in split_tag:
@@ -177,21 +189,22 @@ class W2Vmodel():
         return review_list
 
 
-    def fetch_data_list(self):
+    def fetch_data_list(self, fname):
         """
         Fetch data from all recommendations, store in data directory
         """
         review_list = self.fetch_review_list()
-        with io.open(self.datadir + 'recommendation_data.txt', 'w', encoding='utf8') as file:
+        with io.open(self.datadir + fname, 'w', encoding='utf8') as file:
             for review in review_list:
                 review_lines = sentence_tokenize(review)
                 #pdb.set_trace()
                 #print review_lines
                 for line in review_lines:
-                #print review
-                    file.write(line.decode('utf8', 'ignore'))
+                    #print line, type(line)
+                    pre = line.encode('ascii', 'ignore')
+                    #print pre, type(pre)
+                    file.write(pre.decode('utf8', 'ignore'))
 
         file.close()
 
-        raw_input('stop')
         return

@@ -1,6 +1,5 @@
 from bson.objectid import ObjectId
 import pymongo
-import argparse
 import nltk
 
 from tagmodel import *
@@ -20,18 +19,18 @@ class Recommendation():
     def __init__(self, datadir, modelfname, host, database, recom_collection, product_collection):
         self.datadir = datadir
         self.modelfname = modelfname
-        self.model = models.Word2Vec()
+        self.model = models.Word2Vec()#.load(self.modelfname)
         self.host_string = host
         self.database = database
         self.recom_collection = recom_collection
         self.product_collection = product_collection
         return
  
-    def get_target_tags(self, id):
+    def get_target_tags(self, rid):
         client = pymongo.MongoClient(self.host_string)
         db = client[self.database]
         recom_posts = db[self.recom_collection]
-        post = recom_posts.find_one({"_id": id})
+        post = recom_posts.find_one({"_id": rid})
         tags = post['receiverTags']
         return tags
 
@@ -45,7 +44,9 @@ class Recommendation():
         self.database,
         self.product_collection,
         self.recom_collection)
+        testmodel.load_model()
         top_products = testmodel.find_similar(target_tags)
+        #top_products = self.model.find_similar(target_tags)
 
         return top_products
 
