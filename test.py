@@ -93,6 +93,7 @@ def main():
                      opt.database,
                      opt.recom_collection,
                      opt.product_collection)
+    #pdb.set_trace()
     target_tags = recommendation.get_target_tags(opt.recom_id)
     datastr = "User {0} has target tags: ".format(opt.recom_id) + "\n".join(target_tags)
     #print target_tags
@@ -107,7 +108,8 @@ def main():
         #print "Product tags: ", product[0]['tags']
         ID_list.append(product[0]['prodID'])
 
-    print(target_tags, recommendation_list)
+    print(target_tags)
+    print(recommendation_list)
     #print ID_list
     sys.stdout.flush()
     recommendation.send_recommendation(ID_list, opt.recom_id)

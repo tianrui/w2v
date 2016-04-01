@@ -4,7 +4,7 @@ from data_utils import *
 import os
 import io
 import scipy
-#import pdb
+import pdb
 
 class Sentences():
     def __init__(self, datadir):
@@ -70,12 +70,22 @@ class W2Vmodel():
         for tag in raw_target_tags:
             pruned_target_tags.extend(tag.lower().split(' '))
         pruned_target_tags[:] = list(set([tag for tag in pruned_target_tags if self.model.vocab.has_key(tag)]))
-
+        
+        #pdb.set_trace()
+        print pruned_target_tags
         for product in product_list:
-            pruned_product_tags[:] = list(set([tag for tag in product.tags if self.model.vocab.has_key(tag)]))
-            #print pruned_target_tags
+            #print "raw tags ", product.tags
+            split_product_tags = []
+            for tag in product.tags:
+                #if str(tag).contains('Gourmet Food'):
+                #    raw_input('Press enter')
+                split_product_tags.extend(tag.lower().strip().split('_'))
+            #print "split tags ",split_product_tags
+            pruned_product_tags[:] = list(set([tag for tag in split_product_tags if self.model.vocab.has_key(tag)]))
             #print pruned_product_tags
-            #raw_input('Press enter')
+            #if 'gourmet' in pruned_product_tags:
+            #    raw_input('Press enter')
+            product.tags = pruned_product_tags
 
             if len(pruned_target_tags) > 0 and len(pruned_product_tags) > 0:
                 similarity = self.model.n_similarity(pruned_target_tags, pruned_product_tags)
